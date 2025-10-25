@@ -1,0 +1,63 @@
+<!-- Satori App Header (Outside Platform Nav) -->
+<sat-app-header>
+  <!-- Logo -->
+  <sat-logo satAppHeaderLogo direction="horizontal">
+    <sat-h-mark-logo></sat-h-mark-logo>
+    <sat-word-mark-logo></sat-word-mark-logo>
+  </sat-logo>
+  
+  <!-- App Title -->
+  <h1 satAppHeaderTitle>{{ title }}</h1>
+  
+  <!-- Header Actions -->
+  <div satAppHeaderActions>
+    <button type="button" class="header-action-btn">
+      🔔 Notifications
+    </button>
+    <button type="button" class="header-action-btn">
+      👤 Profile
+    </button>
+  </div>
+</sat-app-header>
+
+<!-- Satori Platform Navigation Container -->
+<sat-platform-nav-container>
+  <!-- Satori Platform Navigation -->
+  <sat-platform-nav>
+    <!-- Navigation Items -->
+    <sat-platform-nav-list-item [routerLink]="['/dashboard']" [active]="true">
+      📊 Dashboard
+    </sat-platform-nav-list-item>
+    <sat-platform-nav-list-item [routerLink]="['/documents']">
+      📁 Documents
+    </sat-platform-nav-list-item>
+    <sat-platform-nav-list-item [routerLink]="['/search']">
+      🔍 Search
+    </sat-platform-nav-list-item>
+    <sat-platform-nav-list-item [routerLink]="['/workflows']">
+      ⚡ Workflows
+    </sat-platform-nav-list-item>
+    <sat-platform-nav-list-item [routerLink]="['/admin']">
+      ⚙️ Administration
+    </sat-platform-nav-list-item>
+    
+    <!-- User Profile Area -->
+    <sat-platform-nav-user>
+      <sat-platform-nav-avatar></sat-platform-nav-avatar>
+    </sat-platform-nav-user>
+  </sat-platform-nav>
+
+  <!-- Main Content Area -->
+  <sat-platform-nav-main-content>
+    <div class="nuxeo-content">
+      <h2>🚀 Nuxeo Satori Integration</h2>
+      <p>Welcome to your Nuxeo ECM application powered by Satori Design System!</p>
+      
+      <!-- Nuxeo Dashboard Component -->
+      <app-nuxeo-dashboard></app-nuxeo-dashboard>
+      
+      <!-- Router Outlet for additional views -->
+      <router-outlet></router-outlet>
+    </div>
+  </sat-platform-nav-main-content>
+</sat-platform-nav-container>

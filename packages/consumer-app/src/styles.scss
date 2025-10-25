@@ -1,0 +1,94 @@
+// Satori Design System Integration for Nuxeo Services
+// Using real Satori packages with available imports
+
+// Import Satori Design System - Complete Setup
+// Import Satori base tokens without the full theme (avoiding Material conflicts)
+@use '@hylandsoftware/satori-tokens/scss/base' as base-tokens;
+
+// Import Satori fonts for consistent typography  
+@import url('@hylandsoftware/satori-fonts/index.css');
+
+// Import Satori icons CSS if available
+// Note: Some icon packages use different import patterns
+
+// Global styles using Satori design tokens
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+// Define CSS custom properties for demo components and Material Design tokens
+:root {
+  // Material Design System tokens that Satori components expect
+  --mat-sys-on-surface-variant: #46464f;
+  --mat-sys-headline-small-font: 'Noto Sans', 'Roboto', sans-serif;
+  --mat-sys-headline-small-size: 24px;
+  --mat-sys-headline-small-line-height: 32px;
+  --mat-sys-headline-small-tracking: 0px;
+  --mat-sys-headline-small-weight: 400;
+  
+  // Colors
+  --primary-color: #1976d2;
+  --secondary-color: #424242;
+  --sat-primary-color: #1976d2;
+  --sat-secondary-color: #424242;
+  --sat-success-color: #4caf50;
+  --sat-warning-color: #ff9800;
+  --sat-error-color: #f44336;
+  --sat-text-primary: #212121;
+  --sat-text-secondary: #757575;
+  --sat-border-color: #e0e0e0;
+  
+  // Spacing
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  
+  // Typography
+  --font-family-primary: 'Roboto', sans-serif;
+  --font-weight-medium: 500;
+  --font-size-base: 1rem;
+  
+  // Border radius
+  --border-radius-md: 4px;
+  
+  // Shadows
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+// Platform navigation styles
+.platform-nav {
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 1rem 0;
+  
+  .nav-links {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    gap: 2rem;
+    padding: 0 1rem;
+  }
+  
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: #333;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    
+    &:hover {
+      background-color: #e0e0e0;
+    }
+  }
+}

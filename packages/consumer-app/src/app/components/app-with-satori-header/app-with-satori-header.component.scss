@@ -1,0 +1,53 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+/* Logo styling */
+sat-logo {
+  display: flex !important;
+  align-items: center !important;
+  height: 40px !important;
+}
+
+.header-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.header-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Main content styling */
+.nuxeo-content {
+  padding: 2rem;
+  background: #f8f9fa;
+  min-height: calc(100vh - 64px);
+}
+
+.nuxeo-content h2 {
+  color: #333;
+  margin-bottom: 1rem;
+  font-family: var(--mat-sys-headline-small-font, 'Noto Sans', sans-serif);
+}
+
+.nuxeo-content p {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .nuxeo-content {
+    padding: 1rem;
+  }
+}

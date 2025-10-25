@@ -1,0 +1,62 @@
+{
+  "name": "consumer-app",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "parser": "angular"
+        }
+      }
+    ]
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "~19.2.14",
+    "@angular/cdk": "~19.2.19",
+    "@angular/common": "~19.2.14",
+    "@angular/compiler": "~19.2.14",
+    "@angular/core": "~19.2.14",
+    "@angular/forms": "~19.2.14",
+    "@angular/material": "~19.2.19",
+    "@angular/platform-browser": "~19.2.14",
+    "@angular/router": "~19.2.14",
+    "@hylandsoftware/satori-cic": "^0.1.0",
+    "@hylandsoftware/satori-devkit": "^0.1.0",
+    "@hylandsoftware/satori-fonts": "^2.0.0",
+    "@hylandsoftware/satori-icons": "^2.12.0",
+    "@hylandsoftware/satori-layout": "^0.1.0",
+    "@hylandsoftware/satori-tokens": "^0.4.0",
+    "@hylandsoftware/satori-ui": "^0.1.0",
+    "@ngx-translate/core": "^17.0.0",
+    "bestzip": "^2.2.1",
+    "oidc-client-ts": "^3.3.0",
+    "rxjs": "~7.8.0",
+    "sass": "^1.85.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.15.0"
+  },
+  "devDependencies": {
+    "@angular/build": "~19.2.17",
+    "@angular/cli": "~19.2.17",
+    "@angular/compiler-cli": "~19.2.15",
+    "@types/jasmine": "~5.1.0",
+    "jasmine-core": "~5.9.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
+    "typescript": "~5.6.3"
+  }
+}

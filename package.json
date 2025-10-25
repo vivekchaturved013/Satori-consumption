@@ -1,0 +1,36 @@
+{
+  "name": "satori-workspace",
+  "version": "1.0.0",
+  "description": "Workspace containing Satori design system and consumer projects",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install",
+    "build:plugin": "cd packages/nuxeo-satori-plugin && npm run build",
+    "build:consumer": "cd packages/consumer-app && npm run build",
+    "build:all": "npm run build:plugin && npm run build:consumer",
+    "start:plugin": "cd packages/nuxeo-satori-plugin && npm run dev",
+    "start:consumer": "cd packages/consumer-app && npm start",
+    "test:plugin": "cd packages/nuxeo-satori-plugin && npm test",
+    "test:consumer": "cd packages/consumer-app && npm test",
+    "test:all": "npm run test:plugin && npm run test:consumer",
+    "lint:plugin": "cd packages/nuxeo-satori-plugin && npm run lint",
+    "lint:consumer": "cd packages/consumer-app && npm run lint",
+    "lint:all": "npm run lint:plugin && npm run lint:consumer",
+    "link:local": "npm run link:satori-packages && npm run link:consumer",
+    "link:satori-packages": "cd packages/satori && npm run build:all && npm link dist/packages/satori-ui && npm link dist/packages/satori-devkit && npm link dist/packages/satori-cic",
+    "link:consumer": "cd packages/consumer-app && npm link @hylandsoftware/satori-ui @hylandsoftware/satori-devkit",
+    "dev:parallel": "concurrently \"npm run start:satori\" \"npm run start:consumer\"",
+    "clean": "npm run clean:satori && npm run clean:consumer",
+    "clean:satori": "cd packages/satori && rm -rf node_modules dist",
+    "clean:consumer": "cd packages/consumer-app && rm -rf node_modules dist"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "npm-run-all": "^4.1.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

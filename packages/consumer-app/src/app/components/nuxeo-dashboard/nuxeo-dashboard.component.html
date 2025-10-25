@@ -1,0 +1,202 @@
+<div class="dashboard-container">
+  
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h2 class="dashboard-title">
+        <sat-icon name="dashboard" color="primary" [size]="24"></sat-icon>
+        Nuxeo Dashboard
+      </h2>
+      <p class="dashboard-subtitle">Real-time data from Nuxeo API</p>
+    </div>
+    <div class="header-actions">
+      <sat-button 
+        variant="outline" 
+        size="small"
+        [disabled]="isAnyLoading()"
+        (clicked)="refreshAllData()">
+        @if (isAnyLoading()) {
+          <sat-icon name="refresh" class="spinning" [size]="16"></sat-icon>
+        } @else {
+          <sat-icon name="refresh" [size]="16"></sat-icon>
+        }
+        Refresh All
+      </sat-button>
+    </div>
+  </div>
+
+  <!-- Dashboard Grid Layout -->
+  <div class="dashboard-grid">
+    
+    <!-- Recently Edited Section -->
+    <div class="dashboard-section">
+      <div class="section-header">
+        <div class="section-title">
+          <sat-icon name="edit" [size]="16" color="primary"></sat-icon>
+          <span>Recently Edited</span>
+        </div>
+      </div>
+      
+      <div class="section-content">
+        @if (isLoadingRecent()) {
+          <div class="loading-state">
+            <mat-spinner diameter="24"></mat-spinner>
+          </div>
+        } @else if (recentlyEdited().length > 0) {
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th class="title-column">Title</th>
+                <th class="modified-column">Modified</th>
+                <th class="contributor-column">Last Contributor</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (doc of recentlyEdited(); track doc.uid) {
+                <tr class="table-row" (click)="onDocumentClick(doc)">
+                  <td class="title-cell">
+                    <div class="title-content">
+                      <div class="document-icon">
+                        <sat-icon [name]="getDocumentIcon(doc.type)" [size]="20"></sat-icon>
+                      </div>
+                      <span class="document-title">{{ doc.title }}</span>
+                    </div>
+                  </td>
+                  <td class="modified-cell">{{ formatTimeAgo(doc.lastModified) }}</td>
+                  <td class="contributor-cell">
+                    <div class="contributor-info">
+                      <div class="contributor-avatar">{{ getContributorInitials(doc.lastContributor) }}</div>
+                      <span class="contributor-email">{{ doc.contributorEmail }}</span>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <div class="empty-state">
+            <span>No recently edited documents</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Tasks Section -->
+    <div class="dashboard-section">
+      <div class="section-header">
+        <div class="section-title">
+          <sat-icon name="task" [size]="16" color="primary"></sat-icon>
+          <span>Tasks</span>
+        </div>
+      </div>
+      
+      <div class="section-content">
+        <div class="empty-state">
+          <span>You don't have any tasks to process at the moment.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recently Viewed Section -->
+    <div class="dashboard-section">
+      <div class="section-header">
+        <div class="section-title">
+          <sat-icon name="visibility" [size]="16" color="primary"></sat-icon>
+          <span>Recently Viewed</span>
+        </div>
+      </div>
+      
+      <div class="section-content">
+        @if (isLoadingViewed()) {
+          <div class="loading-state">
+            <mat-spinner diameter="24"></mat-spinner>
+          </div>
+        } @else if (recentlyViewed().length > 0) {
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th class="title-column">Title</th>
+                <th class="type-column">Type</th>
+                <th class="viewed-column">Last Viewed</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (doc of recentlyViewed(); track doc.uid) {
+                <tr class="table-row" (click)="onDocumentClick(doc)">
+                  <td class="title-cell">
+                    <div class="title-content">
+                      <div class="document-icon">
+                        <sat-icon [name]="getDocumentIcon(doc.type)" [size]="20"></sat-icon>
+                      </div>
+                      <span class="document-title">{{ doc.title }}</span>
+                    </div>
+                  </td>
+                  <td class="type-cell">{{ doc.type }}</td>
+                  <td class="viewed-cell">{{ formatTimeAgo(doc.lastViewed || doc.lastModified) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <div class="empty-state">
+            <span>No recently viewed documents</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Favorite Items Section -->
+    <div class="dashboard-section">
+      <div class="section-header">
+        <div class="section-title">
+          <sat-icon name="star" [size]="16" color="primary"></sat-icon>
+          <span>Favorite Items</span>
+        </div>
+      </div>
+      
+      <div class="section-content">
+        @if (isLoadingFavorites()) {
+          <div class="loading-state">
+            <mat-spinner diameter="24"></mat-spinner>
+          </div>
+        } @else if (favoriteItems().length > 0) {
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th class="title-column">Title</th>
+                <th class="modified-column">Modified</th>
+                <th class="contributor-column">Last Contributor</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (doc of favoriteItems(); track doc.uid) {
+                <tr class="table-row" (click)="onDocumentClick(doc)">
+                  <td class="title-cell">
+                    <div class="title-content">
+                      <div class="document-icon">
+                        <sat-icon [name]="getDocumentIcon(doc.type)" [size]="20"></sat-icon>
+                      </div>
+                      <span class="document-title">{{ doc.title }}</span>
+                    </div>
+                  </td>
+                  <td class="modified-cell">{{ formatTimeAgo(doc.lastModified) }}</td>
+                  <td class="contributor-cell">
+                    <div class="contributor-info">
+                      <div class="contributor-avatar">{{ getContributorInitials(doc.lastContributor) }}</div>
+                      <span class="contributor-email">{{ doc.contributorEmail }}</span>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <div class="empty-state">
+            <span>You haven't starred documents yet.</span>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+</div>

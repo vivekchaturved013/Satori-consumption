@@ -1,0 +1,8 @@
+{
+  "/nuxeo/*": {
+    "target": "http://localhost:8080",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}
