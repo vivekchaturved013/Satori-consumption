@@ -1,0 +1,119 @@
+<!-- Document Browser Modal Overlay -->
+<div class="document-browser-overlay" [class.visible]="isVisible" (click)="onClose()">
+  <div class="document-browser-container" (click)="$event.stopPropagation()">
+    
+    <!-- Header Section -->
+    <div class="browser-header">
+      <div class="header-left">
+        <mat-icon class="browser-icon">description</mat-icon>
+        <h1 class="browser-title">Document Browser</h1>
+      </div>
+      <div class="header-right">
+        <ui-button variant="ghost" size="small" (click)="onClose()">
+          <mat-icon>close</mat-icon>
+        </ui-button>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      
+      <!-- Document Details -->
+      <div class="document-details" *ngIf="documentDetails()">
+        <ui-card>
+          <h2>{{ documentDetails()!.title }}</h2>
+          
+          <!-- Document Actions -->
+          <div class="doc-actions">
+            <ui-button variant="primary" size="small" (click)="onDownload()">
+              <mat-icon>download</mat-icon>
+              Download
+            </ui-button>
+            <ui-button variant="secondary" size="small" (click)="onEdit()">
+              <mat-icon>edit</mat-icon>
+              Edit
+            </ui-button>
+            <ui-button variant="secondary" size="small" (click)="onShare()">
+              <mat-icon>share</mat-icon>
+              Share
+            </ui-button>
+          </div>
+          
+          <!-- Document Information -->
+          <div class="document-info">
+            <div class="info-grid">
+              <div class="info-item">
+                <strong>UID:</strong>
+                <span>{{ documentDetails()!.uid }}</span>
+              </div>
+              <div class="info-item">
+                <strong>Path:</strong>
+                <span>{{ documentDetails()!.path }}</span>
+              </div>
+              <div class="info-item">
+                <strong>Type:</strong>
+                <span>{{ documentDetails()!.type }}</span>
+              </div>
+              <div class="info-item">
+                <strong>State:</strong>
+                <span class="state-badge">{{ documentDetails()!.state }}</span>
+              </div>
+              <div class="info-item">
+                <strong>Creator:</strong>
+                <span>{{ documentDetails()!.creator }}</span>
+              </div>
+              <div class="info-item">
+                <strong>Created:</strong>
+                <span>{{ formatDate(documentDetails()!.created) }}</span>
+              </div>
+              <div class="info-item">
+                <strong>Last Modified:</strong>
+                <span>{{ formatDate(documentDetails()!.lastModified) }}</span>
+              </div>
+              <div class="info-item">
+                <strong>Last Contributor:</strong>
+                <span>{{ documentDetails()!.lastContributor }}</span>
+              </div>
+              <div class="info-item" *ngIf="documentDetails()!.size">
+                <strong>Size:</strong>
+                <span>{{ formatFileSize(documentDetails()!.size) }}</span>
+              </div>
+              <div class="info-item" *ngIf="documentDetails()!.mimeType">
+                <strong>MIME Type:</strong>
+                <span>{{ documentDetails()!.mimeType }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Tags -->
+          <div class="tags-section" *ngIf="documentDetails()?.tags?.length">
+            <h4>Tags</h4>
+            <div class="tags-list">
+              <span class="tag-item" *ngFor="let tag of documentDetails()!.tags">
+                {{ tag }}
+              </span>
+            </div>
+          </div>
+          
+          <!-- Collections -->
+          <div class="collections-section" *ngIf="documentDetails()?.collections?.length">
+            <h4>Collections</h4>
+            <div class="collections-list">
+              <span class="collection-item" *ngFor="let collection of documentDetails()!.collections">
+                {{ collection }}
+              </span>
+            </div>
+          </div>
+          
+        </ui-card>
+      </div>
+
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-overlay" *ngIf="isLoading()">
+      <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+    </div>
+
+  </div>
+</div>

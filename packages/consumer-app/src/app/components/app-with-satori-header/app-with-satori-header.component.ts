@@ -7,9 +7,6 @@ import { SatAppHeaderModule } from '@hylandsoftware/satori-ui/app-header';
 import { SatLogoModule } from '@hylandsoftware/satori-ui/logo';
 import { SatPlatformNavModule } from '@hylandsoftware/satori-ui/platform-nav';
 
-// Import your Nuxeo components
-import { NuxeoDashboardComponent } from '../nuxeo-dashboard/nuxeo-dashboard.component';
-
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -19,8 +16,7 @@ import { NuxeoDashboardComponent } from '../nuxeo-dashboard/nuxeo-dashboard.comp
     RouterModule,
     SatAppHeaderModule,
     SatLogoModule,
-    SatPlatformNavModule,
-    NuxeoDashboardComponent
+    SatPlatformNavModule
   ],
   templateUrl: './app-with-satori-header.component.html',
   styleUrls: ['./app-with-satori-header.component.scss']

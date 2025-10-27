@@ -1,0 +1,104 @@
+@use '@hylandsoftware/satori-tokens/scss/base' as *;
+
+.enhanced-dashboard {
+  padding: sat-space(lg);
+  background: var(--sat-color-surface-primary);
+  min-height: 100vh;
+
+  .user-section {
+    display: flex;
+    align-items: center;
+    gap: sat-space(md);
+    margin: sat-space(lg) 0;
+    padding: sat-space(lg);
+    background: var(--sat-color-surface-secondary);
+    border-radius: sat-border-radius(md);
+    box-shadow: var(--sat-elevation-sm);
+
+    .user-details {
+      flex: 1;
+
+      h2 {
+        margin: 0 0 sat-space(xs) 0;
+        color: var(--sat-color-text-primary);
+        font-size: sat-font-size(xl);
+        font-weight: sat-font-weight(medium);
+      }
+    }
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: sat-space(md);
+    margin: sat-space(lg) 0;
+  }
+
+  // Custom spacing for card content
+  ui-card {
+    margin: sat-space(lg) 0;
+  }
+
+  .team-avatars {
+    display: flex;
+    gap: sat-space(md);
+    flex-wrap: wrap;
+    margin: sat-space(md) 0;
+
+    .team-member {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: sat-space(xs);
+      padding: sat-space(sm);
+      border-radius: sat-border-radius(sm);
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background: var(--sat-color-surface-tertiary);
+      }
+
+      sat-avatar {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+
+      .member-name {
+        font-size: sat-font-size(xs);
+        color: var(--sat-color-text-secondary);
+        text-align: center;
+        margin-top: sat-space(xs);
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .enhanced-dashboard {
+    padding: sat-space(md);
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .user-section {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .document-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: sat-space(sm);
+
+      .doc-info {
+        width: 100%;
+      }
+    }
+  }
+}

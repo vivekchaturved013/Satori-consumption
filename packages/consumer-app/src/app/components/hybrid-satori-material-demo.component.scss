@@ -1,0 +1,115 @@
+@use '@hylandsoftware/satori-tokens/scss/base' as *;
+
+.hybrid-demo {
+  padding: sat-space(lg);
+  background: var(--sat-color-surface-primary);
+  min-height: 100vh;
+
+  .demo-section {
+    margin: sat-space(xl) 0;
+    padding: sat-space(lg);
+    background: var(--sat-color-surface-secondary);
+    border-radius: sat-border-radius(md);
+    box-shadow: var(--sat-elevation-sm);
+
+    h2 {
+      color: var(--sat-color-text-primary);
+      font-size: sat-font-size(xl);
+      font-weight: sat-font-weight(medium);
+      margin: 0 0 sat-space(md) 0;
+    }
+
+    h3 {
+      color: var(--sat-color-text-primary);
+      font-size: sat-font-size(lg);
+      font-weight: sat-font-weight(medium);
+      margin: sat-space(lg) 0 sat-space(md) 0;
+    }
+  }
+
+  .component-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: sat-space(lg);
+    margin: sat-space(md) 0;
+  }
+
+  .component-card {
+    padding: sat-space(md);
+    background: var(--sat-color-surface-tertiary);
+    border-radius: sat-border-radius(sm);
+    border: 1px solid var(--sat-color-border-primary);
+  }
+
+  .demo-button {
+    margin: sat-space(xs);
+    padding: sat-space(sm) sat-space(md);
+    border: 1px solid var(--sat-color-border-primary);
+    border-radius: sat-border-radius(sm);
+    background: var(--sat-color-surface-secondary);
+    color: var(--sat-color-text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: var(--sat-color-surface-tertiary);
+      box-shadow: var(--sat-elevation-sm);
+    }
+  }
+
+  .user-row {
+    display: flex;
+    align-items: center;
+    gap: sat-space(md);
+    padding: sat-space(sm) 0;
+    border-bottom: 1px solid var(--sat-color-border-primary);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .user-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: sat-space(xs);
+
+    .user-name {
+      font-weight: sat-font-weight(medium);
+      color: var(--sat-color-text-primary);
+    }
+
+    .user-email {
+      font-size: sat-font-size(sm);
+      color: var(--sat-color-text-secondary);
+    }
+  }
+
+  .actions {
+    display: flex;
+    gap: sat-space(xs);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .hybrid-demo {
+    padding: sat-space(md);
+
+    .component-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .user-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: sat-space(sm);
+
+      .actions {
+        align-self: stretch;
+        justify-content: flex-end;
+      }
+    }
+  }
+}

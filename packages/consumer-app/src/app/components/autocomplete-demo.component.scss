@@ -1,0 +1,80 @@
+@use '@hylandsoftware/satori-ui/theme' as sat;
+
+.demo-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+h2 {
+  color: #1976d2;
+  font-size: 28px;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.demo-section {
+  margin-bottom: 32px;
+  padding: 24px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  h3 {
+    color: #424242;
+    font-size: 18px;
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+  
+  sat-autocomplete {
+    display: block;
+    max-width: 400px;
+  }
+}
+
+.results-section {
+  margin-top: 24px;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  border-left: 4px solid #1976d2;
+  
+  h3 {
+    color: #1976d2;
+    font-size: 16px;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  
+  pre {
+    background: white;
+    padding: 12px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    margin: 0;
+    overflow-x: auto;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: #424242;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .demo-container {
+    padding: 16px;
+  }
+  
+  .demo-section {
+    padding: 16px;
+    
+    sat-autocomplete {
+      max-width: 100%;
+    }
+  }
+}

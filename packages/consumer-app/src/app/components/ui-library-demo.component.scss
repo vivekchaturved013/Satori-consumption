@@ -1,0 +1,92 @@
+@use '@hylandsoftware/satori-ui/theme' as sat;
+
+.demo-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.component-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  
+  h4 {
+    margin: 0 0 12px 0;
+    color: #424242;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+}
+
+.form-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+}
+
+.code-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  
+  h4 {
+    margin: 0 0 8px 0;
+    color: #424242;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  pre {
+    background: #f5f5f5;
+    padding: 16px;
+    border-radius: 6px;
+    overflow-x: auto;
+    border-left: 4px solid #1976d2;
+    margin: 0;
+    
+    code {
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      color: #424242;
+      line-height: 1.5;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .demo-container {
+    padding: 16px;
+  }
+  
+  .form-demo {
+    .form-row {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+  
+  .component-demo {
+    .button-group {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+}

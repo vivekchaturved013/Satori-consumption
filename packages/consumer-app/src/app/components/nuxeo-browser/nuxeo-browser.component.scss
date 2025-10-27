@@ -1,0 +1,340 @@
+// Minimal styles for Nuxeo Browser
+:host {
+  --sat-color-background-primary: #ffffff;
+  --sat-color-background-secondary: #f5f5f5;
+  --sat-color-background-hover: #f0f0f0;
+  --sat-color-border-primary: #e0e0e0;
+  --sat-color-border-secondary: #eeeeee;
+  --sat-color-text-primary: #333333;
+  --sat-color-text-secondary: #666666;
+  --sat-color-primary: #1976d2;
+  --sat-color-primary-light: #e3f2fd;
+}
+
+.nuxeo-browser {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--sat-color-background-primary);
+  
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    height: 56px;
+    background-color: var(--sat-color-background-secondary);
+    border-bottom: 1px solid var(--sat-color-border-primary);
+    gap: 16px;
+    
+    &-title {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--sat-color-text-primary);
+      margin: 0;
+    }
+    
+    &-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+    }
+  }
+  
+  &__breadcrumbs {
+    padding: 12px 16px;
+    background-color: var(--sat-color-background-primary);
+    border-bottom: 1px solid var(--sat-color-border-secondary);
+  }
+  
+  &__content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+  
+  &__sidebar {
+    width: 280px;
+    background-color: var(--sat-color-background-secondary);
+    border-right: 1px solid var(--sat-color-border-primary);
+    overflow-y: auto;
+    
+    &-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--sat-color-border-secondary);
+      
+      h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--sat-color-text-primary);
+      }
+    }
+  }
+  
+  &__tree {
+    padding: 8px 0;
+    
+    &-node {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      
+      &:hover {
+        background-color: var(--sat-color-background-hover);
+      }
+      
+      &--selected {
+        background-color: var(--sat-color-primary-light);
+        color: var(--sat-color-primary);
+      }
+    }
+    
+    &-icon {
+      margin-right: 8px;
+      font-size: 16px;
+      color: var(--sat-color-text-secondary);
+    }
+    
+    &-label {
+      font-size: 14px;
+      color: var(--sat-color-text-primary);
+    }
+    
+    &-children {
+      margin-left: 24px;
+    }
+  }
+  
+  &__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  &__tabs {
+    display: flex;
+    background-color: var(--sat-color-background-secondary);
+    border-bottom: 1px solid var(--sat-color-border-primary);
+    
+    &-tab {
+      padding: 12px 24px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 14px;
+      color: var(--sat-color-text-secondary);
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background-color: var(--sat-color-background-hover);
+        color: var(--sat-color-text-primary);
+      }
+      
+      &--active {
+        color: var(--sat-color-primary);
+        border-bottom-color: var(--sat-color-primary);
+        background-color: var(--sat-color-background-primary);
+      }
+    }
+  }
+  
+  &__tab-content {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+  }
+  
+  &__document-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  
+  &__document-item {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    border: 1px solid var(--sat-color-border-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: var(--sat-color-background-primary);
+    
+    &:hover {
+      background-color: var(--sat-color-background-hover);
+      border-color: var(--sat-color-border-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    &--selected {
+      border-color: var(--sat-color-primary);
+      background-color: var(--sat-color-primary-light);
+    }
+  }
+  
+  &__document-icon {
+    font-size: 32px;
+    color: var(--sat-color-primary);
+    margin-bottom: 8px;
+    align-self: center;
+  }
+  
+  &__document-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--sat-color-text-primary);
+    margin-bottom: 4px;
+    text-align: center;
+    word-break: break-word;
+  }
+  
+  &__document-meta {
+    font-size: 12px;
+    color: var(--sat-color-text-secondary);
+    text-align: center;
+  }
+  
+  &__properties-panel {
+    width: 320px;
+    background-color: var(--sat-color-background-secondary);
+    border-left: 1px solid var(--sat-color-border-primary);
+    overflow-y: auto;
+    
+    &-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--sat-color-border-secondary);
+      
+      h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--sat-color-text-primary);
+      }
+    }
+    
+    &-content {
+      padding: 16px;
+    }
+  }
+  
+  &__property-group {
+    margin-bottom: 24px;
+    
+    h4 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--sat-color-text-primary);
+    }
+  }
+  
+  &__property-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+    
+    label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--sat-color-text-secondary);
+      margin-bottom: 4px;
+    }
+    
+    span {
+      font-size: 14px;
+      color: var(--sat-color-text-primary);
+      word-break: break-word;
+    }
+  }
+  
+  &__creator-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  
+  &__creator-name {
+    font-size: 14px;
+    color: var(--sat-color-text-primary);
+  }
+  
+  &__comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+    
+    textarea {
+      padding: 8px;
+      border: 1px solid var(--sat-color-border-secondary);
+      border-radius: 4px;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 60px;
+      background-color: var(--sat-color-background-primary);
+      color: var(--sat-color-text-primary);
+      
+      &:focus {
+        outline: none;
+        border-color: var(--sat-color-primary);
+      }
+    }
+  }
+  
+  &__no-selection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--sat-color-text-secondary);
+    
+    sat-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+    
+    p {
+      font-size: 16px;
+      margin: 0;
+    }
+  }
+  
+  &__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--sat-color-text-secondary);
+  }
+}
+
+@media (max-width: 768px) {
+  .nuxeo-browser {
+    &__content {
+      flex-direction: column;
+    }
+    
+    &__sidebar, &__properties-panel {
+      width: 100%;
+      height: 250px;
+    }
+    
+    &__sidebar {
+      border-right: none;
+      border-bottom: 1px solid var(--sat-color-border-primary);
+    }
+    
+    &__properties-panel {
+      border-left: none;
+      border-top: 1px solid var(--sat-color-border-primary);
+    }
+  }
+}

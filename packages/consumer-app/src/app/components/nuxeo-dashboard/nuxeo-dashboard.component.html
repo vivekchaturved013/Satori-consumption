@@ -1,39 +1,62 @@
 <div class="dashboard-container">
   
+  <!-- Breadcrumbs Navigation -->
+  <sat-breadcrumbs [items]="breadcrumbItems"></sat-breadcrumbs>
+  
   <!-- Dashboard Header -->
-  <div class="dashboard-header">
-    <div class="header-content">
-      <h2 class="dashboard-title">
-        <sat-icon name="dashboard" color="primary" [size]="24"></sat-icon>
-        Nuxeo Dashboard
-      </h2>
-      <p class="dashboard-subtitle">Real-time data from Nuxeo API</p>
-    </div>
-    <div class="header-actions">
-      <sat-button 
+  <ui-card 
+    title="🚀 Nuxeo Dashboard" 
+    subtitle="Real-time data from Nuxeo API"
+    icon="dashboard"
+    variant="elevated"
+    [headerActions]="true">
+    
+    <div slot="header-actions">
+      <ui-button 
         variant="outline" 
         size="small"
         [disabled]="isAnyLoading()"
-        (clicked)="refreshAllData()">
-        @if (isAnyLoading()) {
-          <sat-icon name="refresh" class="spinning" [size]="16"></sat-icon>
-        } @else {
-          <sat-icon name="refresh" [size]="16"></sat-icon>
-        }
-        Refresh All
-      </sat-button>
+        [iconLeft]="isAnyLoading() ? 'refresh' : 'refresh'"
+        (click)="refreshAllData()">
+        {{ isAnyLoading() ? 'Loading...' : 'Refresh All' }}
+      </ui-button>
     </div>
-  </div>
+  </ui-card>
 
   <!-- Dashboard Grid Layout -->
   <div class="dashboard-grid">
     
     <!-- Recently Edited Section -->
-    <div class="dashboard-section">
-      <div class="section-header">
-        <div class="section-title">
-          <sat-icon name="edit" [size]="16" color="primary"></sat-icon>
-          <span>Recently Edited</span>
+    <ui-card 
+      title="📝 Recently Edited" 
+      subtitle="Your latest document activity"
+      icon="edit"
+      variant="outlined"
+      [hoverable]="true">
+      
+      <!-- Search Header -->
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <input 
+            type="text" 
+            class="search-input"
+            placeholder="🔍 Search documents, contributors, or types..."
+            [value]="recentlyEditedSearch()"
+            (input)="onRecentlyEditedSearch($any($event.target).value)"
+          />
+          @if (recentlyEditedSearch()) {
+            <button 
+              class="clear-search-btn"
+              (click)="clearRecentlyEditedSearch()"
+              title="Clear search">
+              ✕
+            </button>
+          }
+        </div>
+        <div class="search-results-info">
+          @if (recentlyEditedSearch()) {
+            <small>{{ filteredRecentlyEdited().length }} of {{ recentlyEdited().length }} documents</small>
+          }
         </div>
       </div>
       
@@ -41,8 +64,9 @@
         @if (isLoadingRecent()) {
           <div class="loading-state">
             <mat-spinner diameter="24"></mat-spinner>
+            <p>Loading recently edited documents...</p>
           </div>
-        } @else if (recentlyEdited().length > 0) {
+        } @else if (filteredRecentlyEdited().length > 0) {
           <table class="dashboard-table">
             <thead>
               <tr>
@@ -52,20 +76,24 @@
               </tr>
             </thead>
             <tbody>
-              @for (doc of recentlyEdited(); track doc.uid) {
+              @for (doc of filteredRecentlyEdited(); track doc.uid) {
                 <tr class="table-row" (click)="onDocumentClick(doc)">
                   <td class="title-cell">
                     <div class="title-content">
-                      <div class="document-icon">
-                        <sat-icon [name]="getDocumentIcon(doc.type)" [size]="20"></sat-icon>
-                      </div>
+                      <span class="document-icon">{{ getDocumentEmoji(doc.type) }}</span>
                       <span class="document-title">{{ doc.title }}</span>
                     </div>
                   </td>
-                  <td class="modified-cell">{{ formatTimeAgo(doc.lastModified) }}</td>
+                  <td class="modified-cell">
+                    <sat-category-tag [category]="'blue'">{{ formatTimeAgo(doc.lastModified) }}</sat-category-tag>
+                  </td>
                   <td class="contributor-cell">
                     <div class="contributor-info">
-                      <div class="contributor-avatar">{{ getContributorInitials(doc.lastContributor) }}</div>
+                      <sat-avatar 
+                        [username]="doc.lastContributor"
+                        [size]="'28'">
+                        {{ getContributorInitials(doc.lastContributor) }}
+                      </sat-avatar>
                       <span class="contributor-email">{{ doc.contributorEmail }}</span>
                     </div>
                   </td>
@@ -73,36 +101,68 @@
               }
             </tbody>
           </table>
+        } @else if (recentlyEditedSearch()) {
+          <div class="empty-state">
+            <p>🔍 No documents found matching "{{ recentlyEditedSearch() }}"</p>
+            <ui-button size="small" variant="ghost" (click)="clearRecentlyEditedSearch()">
+              Clear Search
+            </ui-button>
+          </div>
         } @else {
           <div class="empty-state">
             <span>No recently edited documents</span>
           </div>
         }
       </div>
-    </div>
+    </ui-card>
 
     <!-- Tasks Section -->
-    <div class="dashboard-section">
-      <div class="section-header">
-        <div class="section-title">
-          <sat-icon name="task" [size]="16" color="primary"></sat-icon>
-          <span>Tasks</span>
-        </div>
-      </div>
+    <ui-card 
+      title="📋 Tasks" 
+      subtitle="Your workflow assignments"
+      icon="task"
+      variant="outlined"
+      [hoverable]="true">
       
       <div class="section-content">
         <div class="empty-state">
-          <span>You don't have any tasks to process at the moment.</span>
+          <p>✅ You don't have any tasks to process at the moment.</p>
+          <sat-status-tag [status]="'success'">All Clear</sat-status-tag>
         </div>
       </div>
-    </div>
+    </ui-card>
 
     <!-- Recently Viewed Section -->
-    <div class="dashboard-section">
-      <div class="section-header">
-        <div class="section-title">
-          <sat-icon name="visibility" [size]="16" color="primary"></sat-icon>
-          <span>Recently Viewed</span>
+    <ui-card 
+      title="👁️ Recently Viewed" 
+      subtitle="Documents you've accessed recently"
+      icon="visibility"
+      variant="outlined"
+      [hoverable]="true">
+      
+      <!-- Search Header -->
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <input 
+            type="text" 
+            class="search-input"
+            placeholder="🔍 Search viewed documents..."
+            [value]="recentlyViewedSearch()"
+            (input)="onRecentlyViewedSearch($any($event.target).value)"
+          />
+          @if (recentlyViewedSearch()) {
+            <button 
+              class="clear-search-btn"
+              (click)="clearRecentlyViewedSearch()"
+              title="Clear search">
+              ✕
+            </button>
+          }
+        </div>
+        <div class="search-results-info">
+          @if (recentlyViewedSearch()) {
+            <small>{{ filteredRecentlyViewed().length }} of {{ recentlyViewed().length }} documents</small>
+          }
         </div>
       </div>
       
@@ -110,8 +170,9 @@
         @if (isLoadingViewed()) {
           <div class="loading-state">
             <mat-spinner diameter="24"></mat-spinner>
+            <p>Loading recently viewed documents...</p>
           </div>
-        } @else if (recentlyViewed().length > 0) {
+        } @else if (filteredRecentlyViewed().length > 0) {
           <table class="dashboard-table">
             <thead>
               <tr>
@@ -121,36 +182,68 @@
               </tr>
             </thead>
             <tbody>
-              @for (doc of recentlyViewed(); track doc.uid) {
+              @for (doc of filteredRecentlyViewed(); track doc.uid) {
                 <tr class="table-row" (click)="onDocumentClick(doc)">
                   <td class="title-cell">
                     <div class="title-content">
-                      <div class="document-icon">
-                        <sat-icon [name]="getDocumentIcon(doc.type)" [size]="20"></sat-icon>
-                      </div>
+                      <span class="document-icon">{{ getDocumentEmoji(doc.type) }}</span>
                       <span class="document-title">{{ doc.title }}</span>
                     </div>
                   </td>
-                  <td class="type-cell">{{ doc.type }}</td>
+                  <td class="type-cell">
+                    <sat-category-tag [category]="'green'">{{ doc.type }}</sat-category-tag>
+                  </td>
                   <td class="viewed-cell">{{ formatTimeAgo(doc.lastViewed || doc.lastModified) }}</td>
                 </tr>
               }
             </tbody>
           </table>
+        } @else if (recentlyViewedSearch()) {
+          <div class="empty-state">
+            <p>🔍 No documents found matching "{{ recentlyViewedSearch() }}"</p>
+            <ui-button size="small" variant="ghost" (click)="clearRecentlyViewedSearch()">
+              Clear Search
+            </ui-button>
+          </div>
         } @else {
           <div class="empty-state">
             <span>No recently viewed documents</span>
           </div>
         }
       </div>
-    </div>
+    </ui-card>
 
     <!-- Favorite Items Section -->
-    <div class="dashboard-section">
-      <div class="section-header">
-        <div class="section-title">
-          <sat-icon name="star" [size]="16" color="primary"></sat-icon>
-          <span>Favorite Items</span>
+    <ui-card 
+      title="⭐ Favorite Items" 
+      subtitle="Your starred documents and collections"
+      icon="star"
+      variant="outlined"
+      [hoverable]="true">
+      
+      <!-- Search Header -->
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <input 
+            type="text" 
+            class="search-input"
+            placeholder="🔍 Search favorite items..."
+            [value]="favoritesSearch()"
+            (input)="onFavoritesSearch($any($event.target).value)"
+          />
+          @if (favoritesSearch()) {
+            <button 
+              class="clear-search-btn"
+              (click)="clearFavoritesSearch()"
+              title="Clear search">
+              ✕
+            </button>
+          }
+        </div>
+        <div class="search-results-info">
+          @if (favoritesSearch()) {
+            <small>{{ filteredFavoriteItems().length }} of {{ favoriteItems().length }} items</small>
+          }
         </div>
       </div>
       
@@ -158,8 +251,9 @@
         @if (isLoadingFavorites()) {
           <div class="loading-state">
             <mat-spinner diameter="24"></mat-spinner>
+            <p>Loading favorite documents...</p>
           </div>
-        } @else if (favoriteItems().length > 0) {
+        } @else if (filteredFavoriteItems().length > 0) {
           <table class="dashboard-table">
             <thead>
               <tr>
@@ -169,20 +263,25 @@
               </tr>
             </thead>
             <tbody>
-              @for (doc of favoriteItems(); track doc.uid) {
+              @for (doc of filteredFavoriteItems(); track doc.uid) {
                 <tr class="table-row" (click)="onDocumentClick(doc)">
                   <td class="title-cell">
                     <div class="title-content">
-                      <div class="document-icon">
-                        <sat-icon [name]="getDocumentIcon(doc.type)" [size]="20"></sat-icon>
-                      </div>
+                      <span class="document-icon">{{ getDocumentEmoji(doc.type) }}</span>
                       <span class="document-title">{{ doc.title }}</span>
                     </div>
                   </td>
-                  <td class="modified-cell">{{ formatTimeAgo(doc.lastModified) }}</td>
+                  <td class="modified-cell">
+                    <sat-category-tag [category]="'purple'">{{ formatTimeAgo(doc.lastModified) }}</sat-category-tag>
+                  </td>
                   <td class="contributor-cell">
                     <div class="contributor-info">
-                      <div class="contributor-avatar">{{ getContributorInitials(doc.lastContributor) }}</div>
+                      <sat-avatar 
+                        [username]="doc.lastContributor"
+                        [size]="'28'"
+                        [indicator]="'active'">
+                        {{ getContributorInitials(doc.lastContributor) }}
+                      </sat-avatar>
                       <span class="contributor-email">{{ doc.contributorEmail }}</span>
                     </div>
                   </td>
@@ -190,13 +289,31 @@
               }
             </tbody>
           </table>
+        } @else if (favoritesSearch()) {
+          <div class="empty-state">
+            <p>🔍 No favorite items found matching "{{ favoritesSearch() }}"</p>
+            <ui-button size="small" variant="ghost" (click)="clearFavoritesSearch()">
+              Clear Search
+            </ui-button>
+          </div>
         } @else {
           <div class="empty-state">
-            <span>You haven't starred documents yet.</span>
+            <p>⭐ You haven't starred documents yet.</p>
+            <sat-status-tag [status]="'info'">Start favoriting!</sat-status-tag>
           </div>
         }
       </div>
-    </div>
+    </ui-card>
 
   </div>
+
+  <!-- Document Browser Modal (only show when on dashboard route) -->
+  @if (selectedDocument() && !router.url.startsWith('/browse')) {
+    <app-document-browser 
+      [document]="selectedDocument()!"
+      [isVisible]="isDocumentBrowserOpen()"
+      (closeRequested)="onDocumentBrowserClose()">
+    </app-document-browser>
+  }
+
 </div>

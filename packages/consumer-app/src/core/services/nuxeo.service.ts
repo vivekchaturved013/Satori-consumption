@@ -362,7 +362,8 @@ export class NuxeoService implements INuxeoServiceMethods {
         'Content-Type': 'application/json'
       });
 
-      const query = `SELECT * FROM Document WHERE ecm:isVersion = 0 AND ecm:isTrashed = 0 ORDER BY dc:modified DESC`;
+      // Focus on File documents that were recently modified (edited)
+      const query = `SELECT * FROM Document WHERE ecm:isVersion = 0 AND ecm:isTrashed = 0 AND ecm:primaryType = 'File' ORDER BY dc:modified DESC`;
       
       const response = await this.http.get<any>(
         'http://localhost:8080/nuxeo/api/v1/search/lang/NXQL/execute',
@@ -370,7 +371,7 @@ export class NuxeoService implements INuxeoServiceMethods {
           headers: headers,
           params: {
             query: query,
-            pageSize: '10'
+            pageSize: '8'
           }
         }
       ).toPromise();
@@ -387,7 +388,7 @@ export class NuxeoService implements INuxeoServiceMethods {
   }
 
   /**
-   * Get recently viewed documents (fallback to recently modified)
+   * Get recently viewed documents (fallback to collections and workspaces)
    */
   async getRecentlyViewedDocuments(): Promise<any> {
     try {
@@ -399,7 +400,7 @@ export class NuxeoService implements INuxeoServiceMethods {
         'Content-Type': 'application/json'
       });
 
-      // Try audit log first, fallback to recently modified
+      // Try audit log first for actual viewed documents
       try {
         const response = await this.http.get<any>(
           'http://localhost:8080/nuxeo/api/v1/audit',
@@ -407,7 +408,7 @@ export class NuxeoService implements INuxeoServiceMethods {
             headers: headers,
             params: {
               eventIds: 'documentOpened',
-              pageSize: '10'
+              pageSize: '8'
             }
           }
         ).toPromise();
@@ -419,11 +420,11 @@ export class NuxeoService implements INuxeoServiceMethods {
           return response;
         }
       } catch (auditError) {
-        this.logger.warn('NuxeoService', 'Audit log not available, using recently modified fallback');
+        this.logger.warn('NuxeoService', 'Audit log not available, using Collection/Workspace fallback');
       }
 
-      // Fallback to recently modified documents
-      const query = `SELECT * FROM Document WHERE ecm:isVersion = 0 AND ecm:isTrashed = 0 AND ecm:primaryType IN ('File', 'Collection', 'Workspace', 'Domain') ORDER BY dc:modified DESC`;
+      // Fallback to Collections and Workspaces (different from edited files)
+      const query = `SELECT * FROM Document WHERE ecm:isVersion = 0 AND ecm:isTrashed = 0 AND ecm:primaryType IN ('Collection', 'Workspace') ORDER BY dc:created DESC`;
       
       const response = await this.http.get<any>(
         'http://localhost:8080/nuxeo/api/v1/search/lang/NXQL/execute',
@@ -431,7 +432,7 @@ export class NuxeoService implements INuxeoServiceMethods {
           headers: headers,
           params: {
             query: query,
-            pageSize: '10'
+            pageSize: '8'
           }
         }
       ).toPromise();
@@ -460,8 +461,33 @@ export class NuxeoService implements INuxeoServiceMethods {
         'Content-Type': 'application/json'
       });
 
-      // Query for documents marked as favorites
-      const query = `SELECT * FROM Document WHERE ecm:isVersion = 0 AND ecm:isTrashed = 0 AND ecm:tag LIKE '%favorite%' ORDER BY dc:modified DESC`;
+      // First try to get actual favorites
+      try {
+        const favoriteQuery = `SELECT * FROM Document WHERE ecm:isVersion = 0 AND ecm:isTrashed = 0 AND ecm:tag LIKE '%favorite%' ORDER BY dc:modified DESC`;
+        
+        const favoriteResponse = await this.http.get<any>(
+          'http://localhost:8080/nuxeo/api/v1/search/lang/NXQL/execute',
+          {
+            headers: headers,
+            params: {
+              query: favoriteQuery,
+              pageSize: '8'
+            }
+          }
+        ).toPromise();
+        
+        if (favoriteResponse?.entries?.length > 0) {
+          this.logger.info('NuxeoService', 'Favorite documents found', { 
+            count: favoriteResponse.entries.length 
+          });
+          return favoriteResponse;
+        }
+      } catch (favoriteError) {
+        this.logger.warn('NuxeoService', 'Could not fetch tagged favorites, using fallback');
+      }
+
+      // Fallback to domain and folder documents (different content type)
+      const query = `SELECT * FROM Document WHERE ecm:isVersion = 0 AND ecm:isTrashed = 0 AND ecm:primaryType IN ('Domain', 'Folder') ORDER BY dc:title ASC`;
       
       const response = await this.http.get<any>(
         'http://localhost:8080/nuxeo/api/v1/search/lang/NXQL/execute',
@@ -469,18 +495,52 @@ export class NuxeoService implements INuxeoServiceMethods {
           headers: headers,
           params: {
             query: query,
-            pageSize: '10'
+            pageSize: '8'
           }
         }
       ).toPromise();
       
-      this.logger.info('NuxeoService', 'Favorite documents fetched', { 
+      this.logger.info('NuxeoService', 'Favorite documents (fallback) fetched', { 
         count: response?.entries?.length || 0 
       });
       
       return response;
     } catch (error) {
       this.logger.error('NuxeoService', 'Failed to fetch favorite documents', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get document by path - retrieves document details using the document path
+   */
+  async getDocumentByPath(documentPath: string): Promise<any> {
+    try {
+      this.logger.info('NuxeoService', 'Fetching document by path', { documentPath });
+      
+      const credentials = btoa('Administrator:Administrator');
+      const headers = new HttpHeaders({
+        'Authorization': `Basic ${credentials}`,
+        'Content-Type': 'application/json'
+      });
+
+      // Use the path-based API endpoint
+      const response = await this.http.get<any>(
+        `http://localhost:8080/nuxeo/api/v1/path${documentPath}`,
+        {
+          headers: headers
+        }
+      ).toPromise();
+      
+      this.logger.info('NuxeoService', 'Document fetched by path successfully', { 
+        path: documentPath,
+        title: response?.title,
+        uid: response?.uid
+      });
+      
+      return response;
+    } catch (error) {
+      this.logger.error('NuxeoService', 'Failed to fetch document by path', error);
       throw error;
     }
   }

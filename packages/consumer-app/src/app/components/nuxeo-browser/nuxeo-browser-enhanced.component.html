@@ -1,0 +1,343 @@
+<!-- Enhanced Nuxeo Document Browser matching screenshot -->
+<div class="nuxeo-document-browser">
+  
+  <!-- Left Sidebar - Tree Navigation -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h3>Browse</h3>  
+    </div>
+    
+    <div class="tree-navigation">
+      @for (node of treeNodes(); track node.name) {
+        <div class="tree-node-container">
+          <div class="tree-node" 
+               [class.expanded]="node.expanded"
+               [class.selected]="currentPath() === node.path"
+               (click)="onTreeNodeClick(node)">
+            <mat-icon class="expand-icon" *ngIf="node.children">
+              {{ node.expanded ? 'expand_more' : 'chevron_right' }}
+            </mat-icon>
+            <mat-icon class="node-icon">{{ getTreeNodeIcon(node.type) }}</mat-icon>
+            <span class="node-label">{{ node.name }}</span>
+          </div>
+          
+          @if (node.expanded && node.children) {
+            <div class="tree-children">
+              @for (child of node.children; track child.name) {
+                <div class="tree-node child-node"
+                     [class.selected]="currentPath() === child.path"
+                     (click)="onTreeNodeClick(child)">
+                  <mat-icon class="expand-icon" *ngIf="child.children">
+                    {{ child.expanded ? 'expand_more' : 'chevron_right' }}
+                  </mat-icon>
+                  <mat-icon class="node-icon">{{ getTreeNodeIcon(child.type) }}</mat-icon>
+                  <span class="node-label">{{ child.name }}</span>
+                </div>
+                
+                @if (child.expanded && child.children) {
+                  <div class="tree-children">
+                    @for (grandchild of child.children; track grandchild.name) {
+                      <div class="tree-node grandchild-node"
+                           [class.selected]="currentPath() === grandchild.path"
+                           (click)="onTreeNodeClick(grandchild)">
+                        <mat-icon class="node-icon">{{ getTreeNodeIcon(grandchild.type) }}</mat-icon>
+                        <span class="node-label">{{ grandchild.name }}</span>
+                      </div>
+                    }
+                  </div>
+                }
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    
+    <!-- Top Tab Navigation (View/Permissions) -->
+    <div class="content-tabs">
+      <button class="tab-button" 
+              [class.active]="selectedViewTab() === 0"
+              (click)="selectedViewTab.set(0)">
+        View
+      </button>
+      <button class="tab-button" 
+              [class.active]="selectedViewTab() === 1"
+              (click)="selectedViewTab.set(1)">
+        Permissions
+      </button>
+    </div>
+
+    <!-- Content Header with Search -->
+    <div class="content-header">
+      <div class="search-section">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput 
+                 placeholder="Search all documents..." 
+                 [value]="searchQuery()"
+                 (input)="onSearchInput($any($event.target).value)">
+        </mat-form-field>
+      </div>
+      
+      <div class="view-controls">
+        <button mat-icon-button title="List View">
+          <mat-icon>view_list</mat-icon>
+        </button>
+        <button mat-icon-button title="Grid View" class="active">
+          <mat-icon>view_module</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Document Content Area -->
+    <div class="document-content">
+      @if (selectedViewTab() === 0) {
+        <!-- View Tab Content -->
+        
+        @if (currentView() === 'recently-viewed') {
+          <!-- Recently Viewed Header -->
+          <div class="section-header">
+            <h2>Recently viewed</h2>
+            <p class="section-description">Documents you've recently opened</p>
+          </div>
+        } @else if (currentView() === 'search-results' && searchQuery()) {
+          <!-- Search Results Header -->
+          <div class="section-header">
+            <h2>Search Results</h2>
+            <p class="section-description">Results for "{{ searchQuery() }}"</p>
+          </div>
+        }
+        
+        <!-- Document Details Section -->
+        <div class="details-section">
+          <button class="details-toggle" (click)="toggleDetails()">
+            <mat-icon>{{ showDetails() ? 'expand_less' : 'expand_more' }}</mat-icon>
+            Details
+          </button>
+        </div>
+
+        <!-- Results Counter and View Type -->
+        <div class="results-info">
+          @if (currentView() === 'recently-viewed') {
+            <span class="results-count">Recently viewed ({{ filteredDocuments().length }} of {{ recentlyViewedDocuments().length }})</span>
+          } @else {
+            <span class="results-count">Search results: {{ filteredDocuments().length }} result(s) from {{ allDocuments().length }} total documents</span>
+          }
+        </div>
+
+        <!-- Document Grid/List -->
+        <div class="document-grid" [class.recently-viewed]="currentView() === 'recently-viewed'">
+          @if (isLoading()) {
+            <div class="loading-state">
+              <mat-spinner diameter="32"></mat-spinner>
+              <p>Loading documents...</p>
+            </div>
+          } @else if (filteredDocuments().length > 0) {
+            @for (doc of filteredDocuments(); track doc.uid) {
+              <div class="document-card" 
+                   [class.selected]="selectedDocumentForPreview()?.uid === doc.uid"
+                   (click)="selectDocumentForPreview(doc)">
+                
+                <!-- Document Preview/Icon -->
+                <div class="document-preview">
+                  @if (doc.type === 'Picture' && doc.properties?.['file:content']) {
+                    <img [src]="getDocumentThumbnail(doc)" 
+                         [alt]="doc.title"
+                         class="document-thumbnail">
+                  } @else {
+                    <div class="document-icon-container">
+                      <mat-icon class="document-type-icon">{{ getDocumentIcon(doc.type) }}</mat-icon>
+                    </div>
+                  }
+                </div>
+
+                <!-- Document Info -->
+                <div class="document-info">
+                  <h4 class="document-title">{{ doc.title || 'Untitled' }}</h4>
+                  <div class="document-meta">
+                    <span class="document-type">{{ doc.type }}</span>
+                    @if (doc.properties?.['dc:modified']) {
+                      <span class="document-date">{{ formatDate(doc.properties['dc:modified']) }}</span>
+                    }
+                  </div>
+                </div>
+
+                <!-- Document Actions -->
+                <div class="document-actions">
+                  <button mat-icon-button class="action-button" title="View">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                  <button mat-icon-button class="action-button" title="Download">
+                    <mat-icon>download</mat-icon>
+                  </button>
+                  <button mat-icon-button class="action-button" title="More">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                </div>
+              </div>
+            }
+          } @else {
+            <div class="empty-state">
+              <mat-icon class="empty-icon">folder_open</mat-icon>
+              <h3>No documents found</h3>
+              <p>This folder is empty or no documents match your search.</p>
+            </div>
+          }
+        </div>
+
+      } @else {
+        <!-- Permissions Tab Content -->
+        <div class="permissions-content">
+          <h3>Permissions</h3>
+          <p>Permission management functionality would go here.</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Right Properties Panel -->
+  <div class="properties-panel">
+    @if (selectedDocumentForPreview()) {
+      <div class="panel-content">
+        
+        <!-- Document Title -->
+        <div class="document-header">
+          <h3>{{ selectedDocumentForPreview()?.title || 'Untitled Document' }}</h3>
+        </div>
+
+        <!-- Document Creation Info -->
+        <div class="creation-info">
+          <div class="info-row">
+            <span class="label">Created</span>
+            <span class="value">{{ formatDate(selectedDocumentForPreview()?.properties?.['dc:created']) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">By</span>
+            <div class="creator-info">
+              <sat-avatar 
+                [size]="'24'"
+                [username]="selectedDocumentForPreview()?.properties?.['dc:creator'] || 'Unknown'">
+                {{ getCreatorInitials(selectedDocumentForPreview()?.properties?.['dc:creator']) }}
+              </sat-avatar>
+              <span class="creator-name">{{ selectedDocumentForPreview()?.properties?.['dc:creator'] || 'Unknown' }}</span>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="label">Contributors</span>
+            <div class="contributors">
+              <sat-avatar 
+                [size]="'24'"
+                [username]="selectedDocumentForPreview()?.properties?.['dc:lastContributor'] || 'Unknown'">
+                {{ getCreatorInitials(selectedDocumentForPreview()?.properties?.['dc:lastContributor']) }}
+              </sat-avatar>
+              <span class="contributor-name">{{ selectedDocumentForPreview()?.properties?.['dc:lastContributor'] || 'Unknown' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Document Title Field -->
+        <div class="property-section">
+          <h4>Title</h4>
+          <div class="title-field">
+            <span>{{ selectedDocumentForPreview()?.title || 'Untitled' }}</span>
+          </div>
+        </div>
+
+        <!-- Collections Section -->
+        <div class="property-section">
+          <h4>Collections</h4>
+          <div class="collections-list">
+            @if (selectedDocumentForPreview()?.collections && selectedDocumentForPreview()?.collections.length > 0) {
+              @for (collection of selectedDocumentForPreview()?.collections; track collection) {
+                <sat-category-tag [category]="'blue'">{{ collection }}</sat-category-tag>
+              }
+            } @else {
+              <sat-category-tag [category]="'blue'">new collection ×</sat-category-tag>
+            }
+          </div>
+        </div>
+
+        <!-- Tags Section -->
+        <div class="property-section">
+          <h4>Tags</h4>
+          <div class="tags-input">
+            <input type="text" 
+                   placeholder="Add tags to this document" 
+                   class="tag-input">
+          </div>
+        </div>
+
+        <!-- Activity Tabs -->
+        <div class="activity-section">
+          <div class="activity-tabs">
+            <button class="activity-tab" 
+                    [class.active]="selectedTab() === 0"
+                    (click)="selectedTab.set(0)">
+              Comments
+            </button>
+            <button class="activity-tab" 
+                    [class.active]="selectedTab() === 1"
+                    (click)="selectedTab.set(1)">
+              Activity
+            </button>
+          </div>
+
+          <div class="activity-content">
+            @if (selectedTab() === 0) {
+              <!-- Comments Tab -->
+              <div class="comments-section">
+                <div class="comment-input">
+                  <textarea placeholder="Write a comment here..." 
+                            [value]="comment()"
+                            (input)="comment.set($any($event.target).value)"
+                            class="comment-textarea"></textarea>
+                  <div class="comment-actions">
+                    <button mat-button 
+                            class="comment-submit"
+                            [disabled]="!comment().trim()"
+                            (click)="onAddComment()">
+                      Post Comment
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="comments-list">
+                  <!-- Existing comments would be displayed here -->
+                  <div class="no-comments">
+                    <p>No comments yet. Be the first to comment!</p>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <!-- Activity Tab -->
+              <div class="activity-log">
+                <div class="activity-item">
+                  <div class="activity-icon">
+                    <mat-icon>edit</mat-icon>
+                  </div>
+                  <div class="activity-details">
+                    <p><strong>Document created</strong></p>
+                    <span class="activity-time">{{ formatDate(selectedDocumentForPreview()?.properties?.['dc:created']) }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    } @else {
+      <!-- No Document Selected State -->
+      <div class="no-selection">
+        <mat-icon class="no-selection-icon">description</mat-icon>
+        <h3>Select a document</h3>
+        <p>Choose a document from the list to view its details and properties.</p>
+      </div>
+    }
+  </div>
+
+</div>

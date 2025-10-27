@@ -1,0 +1,110 @@
+@use '@hylandsoftware/satori-ui/theme' as sat;
+
+.sat-autocomplete {
+  position: relative;
+  width: 100%;
+  
+  .sat-autocomplete-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    
+    .sat-autocomplete-input {
+      width: 100%;
+      padding: 12px 40px 12px 16px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: inherit;
+      background: white;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      
+      &:focus {
+        outline: none;
+        border-color: #1976d2;
+        box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+      }
+      
+      &::placeholder {
+        color: #757575;
+      }
+      
+      &:disabled {
+        background-color: #f5f5f5;
+        color: #bdbdbd;
+        cursor: not-allowed;
+      }
+    }
+    
+    .sat-autocomplete-icon {
+      position: absolute;
+      right: 12px;
+      color: #757575;
+      pointer-events: none;
+      transition: transform 0.2s ease;
+    }
+  }
+  
+  .sat-autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    
+    .sat-autocomplete-option {
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      border-bottom: 1px solid #f5f5f5;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      &:hover,
+      &.sat-autocomplete-option-selected {
+        background-color: #f5f5f5;
+      }
+      
+      &.sat-autocomplete-option-disabled {
+        color: #bdbdbd;
+        cursor: not-allowed;
+        background-color: transparent;
+        
+        &:hover {
+          background-color: transparent;
+        }
+      }
+    }
+    
+    .sat-autocomplete-no-options {
+      padding: 12px 16px;
+      color: #757575;
+      font-style: italic;
+      text-align: center;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .sat-autocomplete {
+    .sat-autocomplete-dropdown {
+      max-height: 150px;
+    }
+  }
+}
+
+// Focus states for accessibility
+.sat-autocomplete-option:focus {
+  outline: 2px solid #1976d2;
+  outline-offset: -2px;
+}

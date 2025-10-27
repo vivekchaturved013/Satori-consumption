@@ -1,0 +1,273 @@
+<!-- Nuxeo Browser Full Page Layout -->
+<div class="nuxeo-browser-layout">
+  
+  <!-- Top Navigation Bar -->
+  <mat-toolbar class="top-toolbar">
+    <div class="toolbar-left">
+      <button mat-icon-button>
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span class="toolbar-title">Nuxeo</span>
+    </div>
+    
+    <div class="toolbar-center">
+      <sat-breadcrumbs [items]="breadcrumbItems()"></sat-breadcrumbs>
+    </div>
+    
+    <div class="toolbar-right">
+      <button mat-icon-button>
+        <mat-icon>notifications</mat-icon>
+      </button>
+      <button mat-icon-button>
+        <mat-icon>account_circle</mat-icon>
+      </button>
+    </div>
+  </mat-toolbar>
+
+  <!-- Secondary Navigation -->
+  <div class="secondary-nav">
+    <div class="nav-tabs">
+      <button class="nav-tab active">View</button>
+      <button class="nav-tab">Permissions</button>
+      <button class="nav-tab">History</button>
+      <button class="nav-tab">Publishing</button>
+    </div>
+  </div>
+
+  <!-- Main Content Layout -->
+  <div class="main-layout">
+    
+    <!-- Left Sidebar - Navigation Tree -->
+    <div class="left-sidebar">
+      <div class="sidebar-header">
+        <div class="browse-icon">
+          <mat-icon class="browse-logo">description</mat-icon>
+        </div>
+        <h2 class="browse-title">Browse</h2>
+      </div>
+      
+      <div class="tree-navigation">
+        <!-- Tree Navigation -->
+        <div class="tree-container">
+          <div class="tree-node" *ngFor="let node of treeNodes()">
+            <div class="node-item" 
+                 [class.expanded]="node.expanded"
+                 (click)="onTreeNodeClick(node)">
+              <mat-icon class="expand-icon" *ngIf="node.children && node.children.length > 0">
+                {{ node.expanded ? 'expand_more' : 'chevron_right' }}
+              </mat-icon>
+              <mat-icon class="node-icon">{{ node.icon || 'folder' }}</mat-icon>
+              <span class="node-label">{{ node.name }}</span>
+            </div>
+            
+            <!-- Nested Children -->
+            <div class="nested-nodes" *ngIf="node.expanded && node.children">
+              <div class="tree-node nested" *ngFor="let childNode of node.children">
+                <div class="node-item"
+                     [class.expanded]="childNode.expanded"
+                     (click)="onTreeNodeClick(childNode)">
+                  <mat-icon class="expand-icon" *ngIf="childNode.children && childNode.children.length > 0">
+                    {{ childNode.expanded ? 'expand_more' : 'chevron_right' }}
+                  </mat-icon>
+                  <mat-icon class="node-icon">{{ childNode.icon || 'folder' }}</mat-icon>
+                  <span class="node-label">{{ childNode.name }}</span>
+                </div>
+                
+                <!-- Nested Grandchildren -->
+                <div class="nested-nodes" *ngIf="childNode.expanded && childNode.children">
+                  <div class="tree-node nested" *ngFor="let grandChild of childNode.children">
+                    <div class="node-item" (click)="onTreeNodeClick(grandChild)">
+                      <mat-icon class="node-icon">{{ grandChild.icon || 'folder' }}</mat-icon>
+                      <span class="node-label">{{ grandChild.name }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Content Area -->
+    <div class="center-content">
+      
+      <!-- Document Header -->
+      <div class="document-header" *ngIf="documentDetails()">
+        <h1 class="document-title">{{ documentDetails()!.title || 'Root' }}</h1>
+      </div>
+
+      <!-- Content Tabs -->
+      <mat-tab-group class="content-tabs" (selectedTabChange)="onTabChanged($event.index)">
+        
+        <!-- View Tab -->
+        <mat-tab label="View">
+          <div class="tab-content">
+            
+            <!-- Details Section -->
+            <div class="details-section">
+              <div class="details-header">
+                <h3>Details</h3>
+                <button mat-icon-button>
+                  <mat-icon>expand_more</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- Documents List -->
+            <div class="documents-section">
+              <div class="results-info">
+                <span class="result-count">{{ documents().length }} result(s)</span>
+              </div>
+              
+              <div class="documents-grid" *ngIf="documents().length > 0">
+                <div class="document-item" 
+                     *ngFor="let doc of documents()" 
+                     (click)="onDocumentClick(doc)">
+                  <div class="doc-icon">
+                    <mat-icon>{{ getDocumentIcon(doc.type) }}</mat-icon>
+                  </div>
+                  <div class="doc-info">
+                    <h4 class="doc-title">{{ doc.title || doc.properties?.['dc:title'] || 'Untitled' }}</h4>
+                    <p class="doc-path">{{ doc.path }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </mat-tab>
+
+        <!-- Permissions Tab -->
+        <mat-tab label="Permissions">
+          <div class="tab-content">
+            <div class="permissions-content">
+              <p>Permissions management coming soon...</p>
+            </div>
+          </div>
+        </mat-tab>
+
+      </mat-tab-group>
+
+    </div>
+
+    <!-- Right Sidebar - Document Properties -->
+    <div class="right-sidebar" *ngIf="documentDetails()">
+      
+      <!-- Document Properties -->
+      <div class="properties-section">
+        
+        <!-- State Badge -->
+        <div class="property-item state-item">
+          <span class="property-label">State</span>
+          <span class="state-badge">{{ documentDetails()!.state }}</span>
+        </div>
+
+        <!-- Version -->
+        <div class="property-item" *ngIf="documentDetails()!.versionLabel">
+          <span class="property-label">Version</span>
+          <span class="property-value">{{ documentDetails()!.versionLabel }}</span>
+        </div>
+
+        <!-- Last Modified -->
+        <div class="property-item">
+          <span class="property-label">Last Modified</span>
+          <span class="property-value">{{ formatDate(documentDetails()!.lastModified) }}</span>
+        </div>
+
+        <!-- Creator -->
+        <div class="property-item">
+          <span class="property-label">Creator</span>
+          <div class="creator-info">
+            <sat-avatar 
+              [username]="documentDetails()!.creator"
+              [size]="'24'">
+              {{ getCreatorInitials(documentDetails()!.creator) }}
+            </sat-avatar>
+            <span class="creator-name">{{ documentDetails()!.creator }}</span>
+          </div>
+        </div>
+
+        <!-- Contributors -->
+        <div class="property-item">
+          <span class="property-label">Contributors</span>
+          <div class="creator-info">
+            <sat-avatar 
+              [username]="documentDetails()!.lastContributor"
+              [size]="'24'">
+              {{ getCreatorInitials(documentDetails()!.lastContributor) }}
+            </sat-avatar>
+            <span class="creator-name">{{ documentDetails()!.lastContributor }}</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Title Section -->
+      <div class="title-section">
+        <h4>Title</h4>
+        <div class="title-content">
+          <span class="title-value">{{ documentDetails()!.title || 'ss' }}</span>
+        </div>
+      </div>
+
+      <!-- Collections -->
+      <div class="collections-section">
+        <h4>Collections</h4>
+        <div class="collections-content">
+          <div class="empty-state" *ngIf="!documentDetails()?.collections?.length">
+            <p>No collections</p>
+          </div>
+          <div class="collection-list" *ngIf="documentDetails()?.collections?.length">
+            <div class="collection-item" *ngFor="let collection of documentDetails()!.collections">
+              <mat-icon>collections</mat-icon>
+              <span>{{ collection }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div class="tags-section">
+        <h4>Tags</h4>
+        <div class="tags-content">
+          <div class="empty-state" *ngIf="!documentDetails()?.tags?.length">
+            <p>Add tags to this document</p>
+          </div>
+          <div class="tag-list" *ngIf="documentDetails()?.tags?.length">
+            <span class="tag-item" *ngFor="let tag of documentDetails()!.tags">
+              {{ tag }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comments and Activity -->
+      <div class="comments-section">
+        <div class="comments-tabs">
+          <button class="comment-tab active">Comments</button>
+          <button class="comment-tab">Activity</button>
+        </div>
+        
+        <!-- Add Comment Form -->
+        <div class="add-comment">
+          <mat-form-field appearance="outline" class="comment-field">
+            <mat-label>Add a comment</mat-label>
+            <textarea matInput 
+                     [(ngModel)]="comment" 
+                     placeholder="Write your comment here..."
+                     rows="3"></textarea>
+          </mat-form-field>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-overlay" *ngIf="isLoading()">
+    <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+  </div>
+
+</div>

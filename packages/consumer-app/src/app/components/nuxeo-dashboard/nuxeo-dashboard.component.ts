@@ -1,17 +1,35 @@
 import { 
   Component, 
   OnInit, 
+  OnDestroy,
   inject, 
   signal,
+  computed,
   ChangeDetectionStrategy 
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { SatButtonComponent, SatIconComponent } from '../../../lib/satori-demo';
+
+// Import Satori UI components
+import { SatBreadcrumbsModule, SatBreadcrumbsItem } from '@hylandsoftware/satori-ui/breadcrumbs';
+import { SatAvatarModule } from '@hylandsoftware/satori-ui/avatar';
+import { SatTagModule } from '@hylandsoftware/satori-ui/tag';
+import { SatIconModule } from '@hylandsoftware/satori-ui/icons';
+
+// Import our custom UI components
+import { UiButtonComponent } from '../../../lib/ui-components/button/ui-button.component';
+import { UiCardComponent } from '../../../lib/ui-components/card/ui-card.component';
+
+// Import document browser
+import { DocumentBrowserComponent } from '../document-browser/document-browser.component';
 
 import { NuxeoService } from '../../../core/services/nuxeo.service';
 import { LoggingService } from '../../../core/services/logging.service';
@@ -34,21 +52,46 @@ export interface DashboardDocument {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
     MatCardModule,
     MatProgressSpinnerModule,
-    SatButtonComponent,
-    SatIconComponent
+    SatBreadcrumbsModule,
+    SatAvatarModule,
+    SatTagModule,
+    SatIconModule,
+    UiButtonComponent,
+    UiCardComponent,
+    DocumentBrowserComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './nuxeo-dashboard.component.html',
   styleUrls: ['./nuxeo-dashboard.component.scss']
 })
-export class NuxeoDashboardComponent implements OnInit {
+export class NuxeoDashboardComponent implements OnInit, OnDestroy {
   private nuxeoService = inject(NuxeoService);
   private logger = inject(LoggingService);
+  public router = inject(Router); // Make public for template access
+  
+  private destroy$ = new Subject<void>();
+
+  // Breadcrumb navigation
+  breadcrumbItems: SatBreadcrumbsItem[] = [
+    { label: 'Home', href: '/' },
+    { label: 'Nuxeo ECM', href: '/nuxeo' },
+    { label: 'Dashboard' }
+  ];
+
+  // Search functionality
+  private readonly _recentlyEditedSearch = signal<string>('');
+  private readonly _recentlyViewedSearch = signal<string>('');
+  private readonly _favoritesSearch = signal<string>('');
+
+  // Document browser state
+  private readonly _selectedDocument = signal<DashboardDocument | null>(null);
+  private readonly _isDocumentBrowserOpen = signal<boolean>(false);
 
   // Component state signals
   private readonly _recentlyEdited = signal<DashboardDocument[]>([]);
@@ -68,8 +111,70 @@ export class NuxeoDashboardComponent implements OnInit {
   public readonly isLoadingViewed = this._isLoadingViewed.asReadonly();
   public readonly isLoadingFavorites = this._isLoadingFavorites.asReadonly();
 
+  // Public search signals for template access
+  public readonly recentlyEditedSearch = this._recentlyEditedSearch.asReadonly();
+  public readonly recentlyViewedSearch = this._recentlyViewedSearch.asReadonly();
+  public readonly favoritesSearch = this._favoritesSearch.asReadonly();
+  
+  // Document browser signals
+  public readonly selectedDocument = this._selectedDocument.asReadonly();
+  public readonly isDocumentBrowserOpen = this._isDocumentBrowserOpen.asReadonly();
+
+  // Filtered data based on search
+  public readonly filteredRecentlyEdited = computed(() => {
+    const searchTerm = this._recentlyEditedSearch().toLowerCase().trim();
+    if (!searchTerm) return this.recentlyEdited();
+    
+    return this.recentlyEdited().filter(doc => 
+      doc.title.toLowerCase().includes(searchTerm) ||
+      doc.lastContributor.toLowerCase().includes(searchTerm) ||
+      doc.contributorEmail.toLowerCase().includes(searchTerm) ||
+      doc.type.toLowerCase().includes(searchTerm)
+    );
+  });
+
+  public readonly filteredRecentlyViewed = computed(() => {
+    const searchTerm = this._recentlyViewedSearch().toLowerCase().trim();
+    if (!searchTerm) return this.recentlyViewed();
+    
+    return this.recentlyViewed().filter(doc => 
+      doc.title.toLowerCase().includes(searchTerm) ||
+      doc.type.toLowerCase().includes(searchTerm) ||
+      doc.lastContributor.toLowerCase().includes(searchTerm)
+    );
+  });
+
+  public readonly filteredFavoriteItems = computed(() => {
+    const searchTerm = this._favoritesSearch().toLowerCase().trim();
+    if (!searchTerm) return this.favoriteItems();
+    
+    return this.favoriteItems().filter(doc => 
+      doc.title.toLowerCase().includes(searchTerm) ||
+      doc.lastContributor.toLowerCase().includes(searchTerm) ||
+      doc.contributorEmail.toLowerCase().includes(searchTerm) ||
+      doc.type.toLowerCase().includes(searchTerm)
+    );
+  });
+
   async ngOnInit() {
     await this.loadDashboardData();
+    
+    // Close document browser modal when navigating to other routes
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event: NavigationEnd) => {
+        if (event.url.startsWith('/browse')) {
+          this.onDocumentBrowserClose();
+        }
+      });
+  }
+  
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -182,32 +287,77 @@ export class NuxeoDashboardComponent implements OnInit {
       uid: document.uid, 
       title: document.title 
     });
-    // TODO: Implement document navigation
+    
+    // Set the selected document and open the browser
+    this._selectedDocument.set(document);
+    this._isDocumentBrowserOpen.set(true);
+  }
+
+  public onDocumentBrowserClose(): void {
+    this.logger.info('NuxeoDashboardComponent', 'Document browser closed');
+    this._isDocumentBrowserOpen.set(false);
+    this._selectedDocument.set(null);
+  }
+
+  // Search functionality methods
+  public onRecentlyEditedSearch(searchTerm: string): void {
+    this._recentlyEditedSearch.set(searchTerm);
+  }
+
+  public onRecentlyViewedSearch(searchTerm: string): void {
+    this._recentlyViewedSearch.set(searchTerm);
+  }
+
+  public onFavoritesSearch(searchTerm: string): void {
+    this._favoritesSearch.set(searchTerm);
+  }
+
+  public clearRecentlyEditedSearch(): void {
+    this._recentlyEditedSearch.set('');
+  }
+
+  public clearRecentlyViewedSearch(): void {
+    this._recentlyViewedSearch.set('');
+  }
+
+  public clearFavoritesSearch(): void {
+    this._favoritesSearch.set('');
   }
 
   /**
-   * Transform Nuxeo API entries to dashboard document format
+   * Transform Nuxeo API entries to dashboard document format with deduplication
    */
   private transformNuxeoEntriesToDashboardDocuments(entries: any[]): DashboardDocument[] {
-    return entries.map(entry => ({
-      uid: entry.uid,
-      title: entry.title || entry.properties?.['dc:title'] || 'Untitled',
-      type: entry.type,
-      lastModified: entry.lastModified || entry.properties?.['dc:modified'] || new Date().toISOString(),
-      lastViewed: entry.lastViewed || entry.properties?.['dc:modified'],
-      lastContributor: entry.properties?.['dc:lastContributor']?.properties?.username || 
-                       entry.properties?.['dc:lastContributor']?.id || 
-                       entry.properties?.['dc:lastContributor'] ||
-                       'Administrator',
-      contributorEmail: entry.properties?.['dc:lastContributor']?.properties?.email || 
-                        this.getEmailFromUsername(entry.properties?.['dc:lastContributor']?.properties?.username || 
-                                                 entry.properties?.['dc:lastContributor']?.id ||
-                                                 entry.properties?.['dc:lastContributor'] || 
-                                                 'Administrator'),
-      path: entry.path,
-      state: entry.state || 'project',
-      icon: this.getDocumentIcon(entry.type)
-    }));
+    const documentMap = new Map<string, DashboardDocument>();
+    
+    entries.forEach(entry => {
+      const document: DashboardDocument = {
+        uid: entry.uid,
+        title: entry.title || entry.properties?.['dc:title'] || 'Untitled',
+        type: entry.type,
+        lastModified: entry.lastModified || entry.properties?.['dc:modified'] || new Date().toISOString(),
+        lastViewed: entry.lastViewed || entry.properties?.['dc:modified'],
+        lastContributor: entry.properties?.['dc:lastContributor']?.properties?.username || 
+                         entry.properties?.['dc:lastContributor']?.id || 
+                         entry.properties?.['dc:lastContributor'] ||
+                         'Administrator',
+        contributorEmail: entry.properties?.['dc:lastContributor']?.properties?.email || 
+                          this.getEmailFromUsername(entry.properties?.['dc:lastContributor']?.properties?.username || 
+                                                   entry.properties?.['dc:lastContributor']?.id ||
+                                                   entry.properties?.['dc:lastContributor'] || 
+                                                   'Administrator'),
+        path: entry.path,
+        state: entry.state || 'project',
+        icon: this.getDocumentIcon(entry.type)
+      };
+      
+      // Use UID as unique key to prevent duplicates
+      if (!documentMap.has(document.uid)) {
+        documentMap.set(document.uid, document);
+      }
+    });
+    
+    return Array.from(documentMap.values());
   }
 
   /**
@@ -244,6 +394,23 @@ export class NuxeoDashboardComponent implements OnInit {
       'templateroot': 'template'
     };
     return iconMap[type] || 'file';
+  }
+
+  public getDocumentEmoji(type: string): string {
+    const emojiMap: { [key: string]: string } = {
+      'Collection': '📚',
+      'Picture': '🖼️',
+      'Video': '🎥',
+      'Audio': '🎵',
+      'File': '📄',
+      'Favorites': '⭐',
+      'Folder': '📁',
+      'Workspace': '🏢',
+      'Domain': '🌐',
+      'workspaceroot': '💼',
+      'templateroot': '📋'
+    };
+    return emojiMap[type] || '📄';
   }
 
   public formatTimeAgo(dateString: string): string {
